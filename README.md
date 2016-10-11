@@ -1,2 +1,3 @@
 # payments-tools
-Tools for Brave Payments
+Tools for Brave Payments.
+

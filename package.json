@@ -1,0 +1,37 @@
+{
+  "name": "payment-tools",
+  "version": "0.8.0",
+  "description": "Tools for Brave Payments",
+  "main": "index.js",
+  "scripts": {
+    "lint": "standard",
+    "test": "npm run test-security",
+    "test-security": "nsp check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brave/payment-tools"
+  },
+  "author": "Brave Developers <support@brave.com>",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/brave/payment-tools/issues"
+  },
+  "homepage": "https://github.com/brave/payment-tools",
+  "dependencies": {
+    "bitgo": "^2.0.3",
+    "underscore": "1.8.3"
+  },
+  "engines": {
+    "node": "5.6.0",
+    "npm": "3.6.0"
+  },
+  "devDependencies": {
+    "del": "^2.0.2",
+    "gulp": "^3.9.0",
+    "gulp-standard": "^5.2.2",
+    "nsp": "^2.2.0",
+    "run-sequence": "^1.1.0",
+    "standard": "8.1.0"
+  }
+}
