@@ -19,7 +19,11 @@
   },
   "homepage": "https://github.com/brave/payment-tools",
   "dependencies": {
-    "bitgo": "^2.0.3",
+    "bitgo": "^1.7.4",
+    "bitgo-cli": "^1.5.4",
+    "commander": "2.9.0",
+    "node-uuid": "^1.4.7",
+    "prompt": "1.0.0",
     "underscore": "1.8.3"
   },
   "engines": {
