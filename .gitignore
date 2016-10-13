@@ -1,5 +1,4 @@
-keychain-*.json
-wallet-*.json
+*-*.json
 
 # Logs
 logs
