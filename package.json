@@ -1,7 +1,7 @@
 {
   "name": "payment-tools",
   "version": "0.8.0",
-  "description": "Tools for Brave Payments",
+  "description": "Tools for Brave Payments.",
   "main": "index.js",
   "scripts": {
     "lint": "standard",
