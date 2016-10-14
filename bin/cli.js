@@ -5,6 +5,7 @@ var glob = require('glob')
 var path = require('path')
 var program = require('commander')
 var prompt = require('prompt')
+var secrets = require('secrets.js')
 var title = path.basename(process.argv[1], '.js')
 var tools = require(path.join(__dirname, '../index.js'))
 var underscore = require('underscore')
@@ -20,8 +21,8 @@ program
           'the keychain file to write(offline-create-keychains) or read(online-create-wallet/offline-sign-transaction)')
   .option('-w, --wallet <fileName>',
           'the wallet file to write(online-create-transaction)')
-  .option('-r, --recipients <fileName>',
-          'the recipients file to read(online-create-transaction)')
+  .option('-p, --payments <fileName>',
+          'the payments file to read(online-create-transaction)')
   .option('-u, --unsignedTx <fileName>',
           'the unsignedTx file to write(online-create-transaction) or read(offline-sign-transaction)')
   .option('-s, --signedTx <fileName>',
@@ -30,21 +31,48 @@ program
           'the BitGo account email-address')
   .option('-o, --otp <oneTimePassword>',
           'the BitGo account one-time password')
+  .option('-m, --min <number>',
+          'the minimum number of shares for recovery (offline-create-keychains)')
+  .option('-n, --max <number>',
+          'the total number of shares for recovery (offline-create-keychains)')
   .parse(process.argv)
 
-var conform = function (v) {
+var deepclone = function (object) {
+  var clone = underscore.clone(object)
+
+  underscore.each(clone, function (value, key) { if (underscore.isObject(value)) clone[key] = deepclone(value) })
+
+  return clone
+}
+
+var strong = function (v) {
   var z = zxcvbn(v)
 
   return ((!z) || (z.guesses_log10 > 17))
 }
 
 var schema = {
+  accesstoken: { name: 'accesstoken', description: 'BitGo access-token', pattern: /^[0-9a-f]{64}$/ },
   username: { name: 'username', description: 'BitGo email-address', format: 'email' },
   password: { name: 'password', description: 'BitGo password', hidden: true },
   otp: { name: 'otp', description: 'BitGo OTP', pattern: /^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$/ },
-  passphrase1a: { name: 'passphrase1', description: 'User Keychain passphrase', hidden: true, conform: conform },
+  passphrase1a: { name: 'passphrase1', description: 'User Keychain passphrase', hidden: true, conform: strong },
   passphrase1b: { name: 'passphrase1', description: 'User Keychain passphrase', hidden: true },
-  passphrase2a: { name: 'passphrase2', description: 'Backup Keychain passphrase', hidden: true, conform: conform }
+  passphrase2a: { name: 'passphrase2', description: 'Backup Keychain passphrase', hidden: true, conform: strong }
+}
+
+var update = function (params, result) {
+  if (params.username) {
+    params.password = result.password
+    params.otp = program.otp || result.otp
+  } else {
+    params.accessToken = result.accesstoken
+  }
+  if ((!(params.password && params.otp)) && (!params.accessToken)) {
+    throw new Error('missing credentials')
+  }
+
+  return params
 }
 
 var outFile = function (infile, infix, outfix) {
@@ -66,22 +94,46 @@ switch (title) {
   case 'offline-create-keychains':
     prompt.start()
     prompt.get([ schema.passphrase1a, schema.passphrase2a ], function (err, result) {
-      var config, file
+      var config, file, label, max, min, recovery
 
       if (err) throw err
 
+      if ((!(result.passphrase1 && result.passphrase2)) || (result.passphrase1 === result.passphrase2)) {
+        throw new Error('invalid passphrases')
+      }
+
+      label = program.label || uuid.v4().toLowerCase()
       config = tools.offline.createKeychains({
         config: { env: process.env.BITGO_ENV || 'prod' },
-        label: program.label || uuid.v4().toLowerCase(),
+        label: label,
         passphrase1: result.passphrase1,
         passphrase2: result.passphrase2
       })
 
-      file = program.keychains ? program.keychains : ('keychains-' + program.label + '.json')
+      min = Number.isInteger(program.min) ? program.min : 2
+      max = Number.isInteger(program.max) ? program.max : 3
+      if (max < 2) max = 2
+      if (min > max) min = max
+      recovery = { userKey: { hex: secrets.str2hex(result.passphrase1) },
+                   backupKey: { hex: secrets.str2hex(result.passphrase2) }
+                 }
+      recovery.userKey.shares = secrets.share(recovery.userKey.hex, max, min)
+      recovery.backupKey.shares = secrets.share(recovery.backupKey.hex, max, min)
+
+      file = program.keychains || ('keychains-' + label + '.json')
       fs.access(file, fs.F_OK, function (err) {
+        var i, scratchpad
+
         if (!err) throw new Error('file exists: ' + file)
 
         writeFile(file, config)
+
+        for (i = 0; i < max; i++) {
+          scratchpad = deepclone(config)
+          scratchpad.userKey['share_' + i] = recovery.userKey.shares[i]
+          scratchpad.backupKey['share_' + i] = recovery.backupKey.shares[i]
+          writeFile('recovery_' + i + '_' + min + '_' + max + '-' + label + '.json', scratchpad)
+        }
       })
     })
     break
@@ -97,7 +149,7 @@ switch (title) {
       config = JSON.parse(data)
       if (!config.label) {
         label = path.basename(program.keychains, '.json')
-        if (label.indexOf('keychains-') === 0) label = label.substring(9)
+        if (label.indexOf('keychains-') === 0) label = label.substring(10)
         config.label = label
       }
       config.authenticate = {}
@@ -117,12 +169,12 @@ switch (title) {
         }
         prompts.push(schema.password)
         if (!program.otp) prompts.push(schema.otp)
+        prompts.push(schema.accesstoken)
         prompt.get(prompts, function (err, result) {
           if (err) throw err
 
           config.authenticate.username = program.user || result.username
-          config.authenticate.password = result.password
-          config.authenticate.otp = program.otp || result.otp
+          config.authenticate = update(config.authenticate, result)
           tools.online.authenticate(config, function (err, options) {
             if (err) throw err
 
@@ -130,7 +182,7 @@ switch (title) {
               if (err) throw err
 
               config.authenticate = underscore.pick(config.authenticate, [ 'username' ])
-              config.wallet = underscore.pick(wallet, [ 'id', 'type' ])
+              config.wallet = underscore.pick(wallet, [ 'id' ])
               config = underscore.pick(config, [ 'label', 'authenticate', 'wallet' ])
               writeFile(file, config)
             })
@@ -142,7 +194,7 @@ switch (title) {
 
   case 'online-create-transaction':
     if (!program.wallet) throw new Error('must specify --wallet ...')
-    if (!program.recipients) throw new Error('must specify --recipients ...')
+    if (!program.payments) throw new Error('must specify --payments ...')
 
     fs.readFile(program.wallet, { encoding: 'utf8', flag: 'r' }, function (err, data) {
       var config
@@ -150,19 +202,17 @@ switch (title) {
       if (err) throw err
 
       config = JSON.parse(data)
-      if (!(config.authenticate && config.authenticate.username)) {
-        throw new Error('wallet file missing authentication username information')
-      }
+      if (!config.authenticate) throw new Error('wallet file missing authentication username information')
       if (!(config.wallet && config.wallet.id)) throw new Error('wallet file missing wallet identity information')
 
-      fs.readFile(program.recipients, { encoding: 'utf8', flag: 'r' }, function (err, data) {
+      fs.readFile(program.payments, { encoding: 'utf8', flag: 'r' }, function (err, data) {
         var file
 
         if (err) throw err
 
         config.recipients = JSON.parse(data)
 
-        file = program.unsignedTx || outFile(program.keychains, 'recipients-', 'unsigned-')
+        file = program.unsignedTx || outFile(program.payments, 'payments-', 'unsigned-')
         fs.access(file, fs.F_OK, function (err) {
           var prompts
 
@@ -170,14 +220,17 @@ switch (title) {
 
           prompt.start()
           prompts = []
-          schema.password.description = config.authenticate.username + ' password'
-          prompts.push(schema.password)
-          if (!program.otp) prompts.push(schema.otp)
+          if (config.authenticate.username) {
+            schema.password.description = config.authenticate.username + ' password'
+            prompts.push(schema.password)
+            if (!program.otp) prompts.push(schema.otp)
+          } else {
+            prompts.push(schema.accesstoken)
+          }
           prompt.get(prompts, function (err, result) {
             if (err) throw err
 
-            config.authenticate.password = result.password
-            config.authenticate.otp = program.otp || result.otp
+            config.authenticate = update(config.authenticate, result)
             tools.online.authenticate(config, function (err, options) {
               if (err) throw err
 
@@ -230,7 +283,7 @@ switch (title) {
             if (!err) throw new Error('file exists: ' + file)
 
             prompt.start()
-            prompt.get([ schema.passphrase1 ], function (err, result) {
+            prompt.get([ schema.passphrase1b ], function (err, result) {
               if (err) throw err
 
               config.passphrase = result.passphrase1
@@ -257,9 +310,7 @@ switch (title) {
       if (err) throw err
 
       config = JSON.parse(data)
-      if (!(config.authenticate && config.authenticate.username)) {
-        throw new Error('wallet file missing authentication username information')
-      }
+      if (!config.authenticate) throw new Error('wallet file missing authentication username information')
       if (!config.walletId) throw new Error('signedTx file missing wallet identity information')
 
       file = program.submitTx || outFile(program.signedTx, 'signed-', 'submit-')
@@ -270,14 +321,17 @@ switch (title) {
 
         prompt.start()
         prompts = []
-        schema.password.description = config.authenticate.username + ' password'
-        prompts.push(schema.password)
-        if (!program.otp) prompts.push(schema.otp)
+        if (config.authenticate.username) {
+          schema.password.description = config.authenticate.username + ' password'
+          prompts.push(schema.password)
+          if (!program.otp) prompts.push(schema.otp)
+        } else {
+          prompts.push(schema.accesstoken)
+        }
         prompt.get(prompts, function (err, result) {
           if (err) throw err
 
-          config.authenticate.password = result.password
-          config.authenticate.otp = program.otp || result.otp
+          config.authenticate = update(config.authenticate, result)
           tools.online.authenticate(config, function (err, options) {
             if (err) throw err
 
@@ -287,6 +341,8 @@ switch (title) {
             tools.online.submitTx(options, function (err, result) {
               if (err) throw err
 
+              result.walletId = config.walletId
+              result.message = config.message
               writeFile(file, result)
             })
           })
@@ -296,5 +352,15 @@ switch (title) {
     break
 
   default:
+    console.log('usage: command [options]')
+    console.log('  offline-create-keychains [--label string] [--min m] [--max n] [--keychains output-file]')
+    console.log('  online-create-wallet --keychains input-file [--wallet output-file] authopts...')
+    console.log('  online-create-transaction --wallet input-file --payments input-file [--unsignedTx output-file] authopts...')
+    console.log('  offline-sign-transaction --unsignedTx input-file [--signedTx output-file] [--keychains input-file]')
+    console.log('  online-submit-transaction --signedTx output-file authopts...')
+    console.log('')
+    console.log('authopts: --user email-address [--otp one-time-password]')
+    console.log('  if --user is used on wallet creation, then password and OTP are required for subsequent operations')
+    console.log('  otherwise, access-token is prompted')
     break
 }
