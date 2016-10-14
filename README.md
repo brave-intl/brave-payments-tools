@@ -38,6 +38,9 @@ the keychains file is used by the networked machine to create an HD wallet on th
 The two passphrases are used to encrypt the private key for the user and backup keychains, respectively.
 A strong password must be used for each
 (Requiring at least `10^17` guesses according to [zxcvbn](https://github.com/dropbox/zxcvbn).)
+Private keys are encrypted using
+
+    sjcl.encrypt(passPhrase, privateKey, { iter: 100000, ks: 256, salt: sjcl.random.randomWords(2, 0) })
 
 The keychains file is kept on the cold machine and transferred to the networked machine,
 e.g.,
