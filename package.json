@@ -14,6 +14,14 @@
   },
   "author": "Brave Developers <support@brave.com>",
   "license": "MPL-2.0",
+  "bin": {
+    "offline-create-keychains"    : "./bin/offline-create-keychains",
+    "offline-recover-passphrases" : "./bin/offline-recover-passphrases",
+    "offline-sign-transaction"    : "./bin/offline-sign-transaction",
+    "online-create-transaction"   : "./bin/online-create-transaction",
+    "online-create-wallet"        : "./bin/online-create-wallet",
+    "online-submit-transaction"   : "./bin/online-submit-transaction"
+  },
   "bugs": {
     "url": "https://github.com/brave/payment-tools/issues"
   },

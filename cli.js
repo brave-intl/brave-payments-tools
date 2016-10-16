@@ -6,15 +6,14 @@ var path = require('path')
 var program = require('commander')
 var prompt = require('prompt')
 var secrets = require('secrets.js')
-var title = path.basename(process.argv[1], '.js')
-var tools = require(path.join(__dirname, '../index.js'))
+var tools = require(path.join(__dirname, './index.js'))
 var underscore = require('underscore')
 var uuid = require('node-uuid')
 var zxcvbn = require('zxcvbn')
 
-process.title = title
+process.title = path.basename(process.argv[1], '.js')
 program
-  .version(require(path.join(__dirname, '../package.json')).version)
+  .version(require(path.join(__dirname, 'package.json')).version)
   .option('-l, --label <string>',
           'the label to use for the keychains/wallet/unsignedTx')
   .option('-k, --keychains <fileName>',
@@ -90,7 +89,7 @@ var writeFile = function (file, data) {
   })
 }
 
-switch (title) {
+switch (process.title) {
   case 'offline-create-keychains':
     prompt.start()
     prompt.get([ schema.passphrase1a, schema.passphrase2a ], function (err, result) {

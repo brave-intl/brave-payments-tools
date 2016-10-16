@@ -1,6 +1,4 @@
 # payments-tools
-Tools for Brave Payments.
-
 Based on this [blog post](https://blog.bitgo.com/cold-offline-key-support-with-bitgo-multi-sig-2/),
 and Similar to the BitGo [cli tool](https://github.com/BitGo/bitgo-cli),
 but tailored more for batch-like operations.
@@ -15,18 +13,18 @@ To emphasize:
 with at least `M` trusted actors required to co-operate in order to recovery the passphrases for the private keys.
 
 # Creating a Wallet
-First,
-two pairs are created on the cold machine,
+To summarize:
+
+1. Two keypairs are created on the cold machine,
 the private keys are encrypted with user-supplied passphrases,
 a keychains file is prepared for the networked machine,
 and (partial) recovery files are generated for distribution.
 
-Then,
-the keychains file is used by the networked machine to create an HD wallet on the BitGo server.
+2. The keychains file is used by the networked machine to create an HD wallet on the BitGo server.
 
 ## On the Cold Machine
 
-    % bin/offline-create-keychains.js
+    % bin/offline-create-keychains
     prompt: User Keychain passphrase: ******
     prompt: Backup Keychain passphrase: ******
 
@@ -82,7 +80,7 @@ These recovery files can be used to reconstruct the user and backup keys using
 
 ## On the Networked Machine
 
-    % bin/online-create-wallet.js \
+    % bin/online-create-wallet \
         --keychains keychains-779826ce-a74f-4d61-907a-0d238db9808f.json
     prompt: BitGo email-address:
     prompt: BitGo password-address:
@@ -107,24 +105,26 @@ and is kept on the networked machine, e.g.,
 
 # Submitting a Transaction
 
-## On the Networked Machine
-First,
-a payments file is prepared,
+To summarize:
+
+1. A payments file is prepared on the networked machine,
 e.g.,
 
-    { "1JQPqfRW2xKKQkFWd62MvZq2Ed7B7x8KU" : 500000 }
+        { "1JQPqfRW2xKKQkFWd62MvZq2Ed7B7x8KU" : 500000 }
 
-which contains a list of Bitcoin addresses to be credited.
-Next,
-an unsigned transaction is created,
+    which contains a list of Bitcoin addresses to be credited.
+
+2. An unsigned transaction is created,
 and then transferred to the cold machine.
-On the cold machine,
+
+3. On the cold machine,
 the transaction is signed (requiring the operator to enter the passphrase for the user keypair's private key).
-The signed transaction is then transferre to the networked machine and submitted to the BitGo server.
+
+4. The signed transaction is then transferred to the networked machine and submitted to the BitGo server.
 
 ## On the Networked Machine
 
-    % bin/online-create-transaction.js \
+    % bin/online-create-transaction \
         --wallet wallet-779826ce-a74f-4d61-907a-0d238db9808f.json \
         --payments payments-batch1.json 
     prompt: BitGo access-token: ...
@@ -156,7 +156,7 @@ e.g.,
 
 ## On the Cold Machine
 
-    % bin/offline-sign-transaction.js \
+    % bin/offline-sign-transaction \
         --unsignedTx unsigned-batch1.json
     prompt: User Keychain passphrase: ******
 
@@ -175,7 +175,7 @@ e.g.,
 
 ## On the Networked Machine
 
-    % bin/online-submit-transaction.js \
+    % bin/online-submit-transaction \
         --signedTx signed-batch1.json
     prompt: BitGo access-token: ...
 
@@ -198,9 +198,9 @@ The payments, unsigned transaction, and signed transaction files should be archi
 
 # Passphrase Recovery
 
-`M` of the `N` trusted actors place their recovery files on a third machine and run
+`M` of the `N` trusted actors place their recovery files on the cold machine and run
 
-    % bin/recovery-passphrases.js *.json
+    % bin/offline-recover-passphrases *.json
 
 This outputs the passphrases used to encrypt the private keys for the user and backup keypairs.
 The recovery files should then be "securely" deleted from the third machine.
