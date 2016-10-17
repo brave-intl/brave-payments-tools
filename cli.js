@@ -350,6 +350,32 @@ switch (process.title) {
     })
     break
 
+  case 'offline-recover-passphrases':
+    var recovery = {}
+
+    program.args.forEach(function (file) {
+      var config = JSON.parse(fs.readFileSync(file, { encoding: 'utf8', flag: 'r' }))
+
+      underscore.keys(config).forEach(function (type) {
+        var info = config[type]
+
+        if (!recovery[type]) recovery[type] = {}
+        if (!recovery[type][info.xpub]) recovery[type][info.xpub] = []
+        underscore.keys(info).forEach(function (k) {
+          if (k.indexOf('share_') !== -1) recovery[type][info.xpub].push(info[k])
+        })
+      })
+    })
+    underscore.keys(recovery).forEach(function (type) {
+      underscore.keys(recovery[type]).forEach(function (xpub) {
+        var combo = secrets.combine(recovery[type][xpub])
+
+        if (!combo) throw new Error('insufficient shards for ' + type + '.' + xpub)
+        console.log(type + '.' + xpub + ' ' + secrets.hex2str(combo))
+      })
+    })
+    break
+
   default:
     console.log('usage: command [options]')
     console.log('  offline-create-keychains [--label string] [--min m] [--max n] [--keychains output-file]')
