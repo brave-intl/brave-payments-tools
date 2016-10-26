@@ -54,7 +54,8 @@ var schema = {
   accesstoken: { name: 'accesstoken', description: 'BitGo access-token', pattern: /^[0-9a-f]{64}$/ },
   username: { name: 'username', description: 'BitGo email-address', format: 'email' },
   password: { name: 'password', description: 'BitGo password', hidden: true },
-  otp: { name: 'otp', description: 'BitGo OTP', pattern: /^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$/ },
+  otp: { name: 'otp', description: 'BitGo OTP', pattern: /^[0-9][0-9][0-9][0-9][0-9][0-9]([0-9]?)$/ },
+  enterpriseId: { name: 'enterpriseId', description: 'Wallet enterpriseId', pattern: /^[0-9a-f]{32}$/ },
   passphrase1a: { name: 'passphrase1', description: 'User Keychain passphrase', hidden: true, conform: strong },
   passphrase1b: { name: 'passphrase1', description: 'User Keychain passphrase', hidden: true },
   passphrase2a: { name: 'passphrase2', description: 'Backup Keychain passphrase', hidden: true, conform: strong }
@@ -169,11 +170,13 @@ switch (process.title) {
         prompts.push(schema.password)
         if (!program.otp) prompts.push(schema.otp)
         prompts.push(schema.accesstoken)
+        prompts.push(schema.enterpriseId)
         prompt.get(prompts, function (err, result) {
           if (err) throw err
 
           config.authenticate.username = program.user || result.username
-          config.authenticate = update(config.authenticate, result)
+          config.authenticate = update(config.authenticate, underscore.omit(result, [ 'enterpriseId' ]))
+          if (result.enterpriseId) config.enterpriseId = result.enterpriseId
           tools.online.authenticate(config, function (err, options) {
             if (err) throw err
 
