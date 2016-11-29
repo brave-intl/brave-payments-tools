@@ -208,11 +208,13 @@ switch (process.title) {
       if (!(config.wallet && config.wallet.id)) throw new Error('wallet file missing wallet identity information')
 
       fs.readFile(program.payments, { encoding: 'utf8', flag: 'r' }, function (err, data) {
-        var file
+        var details, file
 
         if (err) throw err
 
-        config.recipients = JSON.parse(data)
+        details = JSON.parse(data)
+        config.recipients = {}
+        details.forEach(function (entry) { config.recipients[entry.address] = entry.satoshis })
 
         file = program.unsignedTx || outFile(program.payments, 'payments-', 'unsigned-')
         fs.access(file, fs.F_OK, function (err) {
