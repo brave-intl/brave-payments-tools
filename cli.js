@@ -8,7 +8,7 @@ var prompt = require('prompt')
 var secrets = require('secrets.js')
 var tools = require(path.join(__dirname, './index.js'))
 var underscore = require('underscore')
-var uuid = require('node-uuid')
+var uuid = require('uuid')
 var zxcvbn = require('zxcvbn')
 
 process.title = path.basename(process.argv[1], '.js')
