@@ -114,9 +114,10 @@ switch (process.title) {
       max = Number.isInteger(program.max) ? program.max : 3
       if (max < 2) max = 2
       if (min > max) min = max
-      recovery = { userKey: { hex: secrets.str2hex(result.passphrase1) },
-                   backupKey: { hex: secrets.str2hex(result.passphrase2) }
-                 }
+      recovery = {
+        userKey: { hex: secrets.str2hex(result.passphrase1) },
+        backupKey: { hex: secrets.str2hex(result.passphrase2) }
+      }
       recovery.userKey.shares = secrets.share(recovery.userKey.hex, max, min)
       recovery.backupKey.shares = secrets.share(recovery.backupKey.hex, max, min)
 
