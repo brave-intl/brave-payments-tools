@@ -1,6 +1,6 @@
 {
   "name": "payment-tools",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Tools for Brave Payments.",
   "main": "index.js",
   "scripts": {
@@ -33,7 +33,7 @@
     "prompt": "1.0.0",
     "secrets.js": "^0.1.8",
     "underscore": "1.8.3",
-    "uuid": "3.0.0",
+    "uuid": "3.0.1",
     "zxcvbn": "^4.4.0"
   },
   "engines": {
@@ -43,9 +43,9 @@
   "devDependencies": {
     "del": "^2.0.2",
     "gulp": "^3.9.0",
-    "gulp-standard": "^9.0.0",
+    "gulp-standard": "^10.0.0",
     "nsp": "^2.2.0",
     "run-sequence": "^1.1.0",
-    "standard": "10.0.0"
+    "standard": "10.0.1"
   }
 }
