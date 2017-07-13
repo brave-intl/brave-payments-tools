@@ -41,11 +41,16 @@
     "npm": "4.2.0"
   },
   "devDependencies": {
+    "babel-eslint": "^7.2.1",
     "del": "^3.0.0",
     "gulp": "^3.9.0",
     "gulp-standard": "^10.0.0",
     "nsp": "^2.2.0",
     "run-sequence": "^2.0.0",
     "standard": "10.0.2"
+  },
+  "standard": {
+    "ignore": [ "scripts/*.js" ],
+    "parser": "babel-eslint"
   }
 }
