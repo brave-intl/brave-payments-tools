@@ -27,25 +27,25 @@
   },
   "homepage": "https://github.com/brave/payment-tools",
   "dependencies": {
-    "bitgo": "^2.0.4",
-    "commander": "2.9.0",
+    "bitgo": "^3.4.4",
+    "commander": "2.11.0",
     "glob": "^7.0.6",
     "prompt": "1.0.0",
     "secrets.js": "^0.1.8",
     "underscore": "1.8.3",
-    "uuid": "3.0.1",
+    "uuid": "3.1.0",
     "zxcvbn": "^4.4.0"
   },
   "engines": {
-    "node": "7.8.0",
+    "node": "7.10.1",
     "npm": "4.2.0"
   },
   "devDependencies": {
-    "del": "^2.0.2",
+    "del": "^3.0.0",
     "gulp": "^3.9.0",
     "gulp-standard": "^10.0.0",
     "nsp": "^2.2.0",
-    "run-sequence": "^1.1.0",
-    "standard": "10.0.1"
+    "run-sequence": "^2.0.0",
+    "standard": "10.0.2"
   }
 }
