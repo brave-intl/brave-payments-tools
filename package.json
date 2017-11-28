@@ -15,25 +15,31 @@
   "author": "Brave Developers <support@brave.com>",
   "license": "MPL-2.0",
   "bin": {
-    "offline-create-keychains"    : "./bin/offline-create-keychains",
-    "offline-recover-passphrases" : "./bin/offline-recover-passphrases",
-    "offline-sign-transaction"    : "./bin/offline-sign-transaction",
-    "online-create-transaction"   : "./bin/online-create-transaction",
-    "online-create-wallet"        : "./bin/online-create-wallet",
-    "online-submit-transaction"   : "./bin/online-submit-transaction"
+    "offline-create-keychains": "./bin/offline-create-keychains",
+    "offline-recover-passphrases": "./bin/offline-recover-passphrases",
+    "offline-sign-transaction": "./bin/offline-sign-transaction",
+    "online-create-transaction": "./bin/online-create-transaction",
+    "online-create-wallet": "./bin/online-create-wallet",
+    "online-submit-transaction": "./bin/online-submit-transaction"
   },
   "bugs": {
     "url": "https://github.com/brave/payment-tools/issues"
   },
   "homepage": "https://github.com/brave/payment-tools",
   "dependencies": {
+    "@uphold/uphold-sdk-javascript": "^2.0.3",
+    "bignumber.js": "^4.0.4",
     "bitgo": "^3.4.4",
+    "brave-crypto": "0.0.1",
     "commander": "2.11.0",
-    "glob": "^7.0.6",
+    "glob": "^7.1.2",
+    "http-request-signature": "0.0.2",
+    "json-stable-stringify": "1.0.1",
     "prompt": "1.0.0",
     "secrets.js": "^0.1.8",
     "underscore": "1.8.3",
     "uuid": "3.1.0",
+    "zero-fill": "2.2.3",
     "zxcvbn": "^4.4.0"
   },
   "engines": {
@@ -42,15 +48,15 @@
   },
   "devDependencies": {
     "babel-eslint": "^7.2.1",
-    "del": "^3.0.0",
-    "gulp": "^3.9.0",
-    "gulp-standard": "^10.0.0",
+    "json2csv": "^3.9.0",
+    "npm-check-updates": "^2.12.1",
     "nsp": "^2.2.0",
-    "run-sequence": "^2.0.0",
     "standard": "10.0.2"
   },
   "standard": {
-    "ignore": [ "scripts/*.js" ],
+    "ignore": [
+      "scripts/*.js"
+    ],
     "parser": "babel-eslint"
   }
 }
