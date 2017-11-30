@@ -1,14 +1,19 @@
 #!/bin/sh
 
-if [ -z "$1" ]; then
-    echo "usage: $0 username" 1>&2
+if [ -z "$1" -o -z "$2" ]; then
+    echo "usage: $0 username OTP" 1>&2
     exit 1
 fi
 
-curl https://api-sandbox.uphold.com/v0/me/tokens \
-  -s \
+API="api.uphold.com"
+if [ \( "$UPHOLD_ENVIRONMENT" = "sandbox" \) -o \( "$UPHOLD_ENVIRONMENT" = "sandbox" \) ]; then
+  API="api-sandbox.uphold.com"
+fi    
+
+curl "https://$API/v0/me/tokens" \
+  -v \
   -X POST \
-  -H 'OTP-Token: 0000000' \
-  -H "Content-Type: application/json" \
   -u "$1" \
-  -d '{ "description": "payment-tools" }' | cat
+  -H "OTP-Token: $2" \
+  -H "Content-Type: application/json" \
+  -d '{ "description": "brave-payment-tools" }' | cat
