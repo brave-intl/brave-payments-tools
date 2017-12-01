@@ -1,35 +1,34 @@
 #!/usr/bin/env node
 
-/* jshint asi: true, node: true, laxbreak: true, laxcomma: true, undef: true, unused: true */
+/* jshint asi: true, node: true, laxbreak: true, laxcomma: true, undef: true, unused: true, esversion: 6 */
 
-var BitGoJS = require('../node_modules/bitgo/src/index.js');
-var underscore = require('../node_modules/underscore/underscore.js')
+const BitGoJS = require('bitgo')
+const underscore = require('underscore')
 
-var bitgo
+let bitgo
 
-
-var transfer = function (source, passphrase, destination) {
-  bitgo.wallets().get({ type: 'bitcoin', id: source }, function (err, wallet) {
-    var satoshis
+const transfer = (source, passphrase, destination) => {
+  bitgo.wallets().get({ type: 'bitcoin', id: source }, (err, wallet) => {
+    let satoshis
 
     if (err) throw err
 
     satoshis = wallet.confirmedBalance()
 
-    wallet.removePolicyRule({ id: 'com.brave.limit.velocity.30d' }, function (err /*, result */) {
+    wallet.removePolicyRule({ id: 'com.brave.limit.velocity.30d' }, (err /*, result */) => {
       if (err) {
         if (satoshis > 7000000) satoshis = 7000000
 //      throw err
       }
 
-      bitgo.estimateFee({ numBlocks: 5 }, function (err, estimate) {
-        var fee, numBlocks
+      bitgo.estimateFee({ numBlocks: 5 }, (err, estimate) => {
+        let fee, numBlocks
 
         if (err) throw err
 
         console.log('estimated fees: ' + JSON.stringify(estimate, null, 2))
         numBlocks = 0
-        for (var target in estimate.feeByBlockTarget) {
+        for (let target in estimate.feeByBlockTarget) {
           if ((target > numBlocks) && (estimate.numBlocks >= target)) fee = estimate.feeByBlockTarget[numBlocks = target]
         }
         console.log('satoshis=' + satoshis + ' fee=' + fee + ' numBlocks=' + numBlocks)
@@ -38,7 +37,7 @@ var transfer = function (source, passphrase, destination) {
                          , amount           : satoshis - fee
                          , fee              : fee
                          , walletPassphrase : passphrase
-                         }, function (err, result) {
+                         }, (err, result) => {
           if (err) throw err
 
           console.log(JSON.stringify(underscore.omit(result, [ 'tx' ]), null, 2))

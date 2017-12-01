@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 
-/* jshint asi: true, node: true, laxbreak: true, laxcomma: true, undef: true, unused: true */
+/* jshint asi: true, node: true, laxbreak: true, laxcomma: true, undef: true, unused: true, esversion: 6 */
 
-var BitGoJS = require('../node_modules/bitgo/src/index.js')
-var json2csv = require('../node_modules/json2csv/lib/json2csv.js')
-var underscore = require('../node_modules/underscore/underscore.js')
+const BitGoJS = require('bitgo')
+const json2csv = require('json2csv')
+const underscore = require('underscore')
 
-var bitgo
+let bitgo
 
-var data = []
-var wallets = []
+const data = []
+const wallets = []
 
-var add = function () {
-  var wallet = wallets.shift()
+const add = () => {
+  const wallet = wallets.shift()
 
-  bitgo.wallets().get({ type: 'bitcoin', id: wallet.id }, function (err, result) {
+  bitgo.wallets().get({ type: 'bitcoin', id: wallet.id }, (err, result) => {
     if (err) throw err
 
     process.stderr.write('>')
@@ -30,9 +30,9 @@ var add = function () {
   })
 }
 
-var listWallets = function (skip) {
-  bitgo.wallets().list({ skip: skip, limit: 250 }, function (err, result) {
-    var id
+const listWallets = (skip) => {
+  bitgo.wallets().list({ skip: skip, limit: 250 }, (err, result) => {
+    let id
 
     if (err) throw err
 
