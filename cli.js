@@ -204,7 +204,7 @@ switch (process.title) {
           prompts.push(schema.password)
           prompts.push(schema.enterpriseId)
         }
-        if (!program.otp) prompts.push(schema.otp)
+//      if (!program.otp) prompts.push(schema.otp)
         prompts.push(schema.accessToken)
         prompt.get(prompts, (err, result) => {
           if (err) throw err
@@ -263,7 +263,7 @@ switch (process.title) {
             prompts.push(schema.password)
             if (!program.otp) prompts.push(schema.otp)
           } else {
-            if ((program.provider !== 'bitgo') && (!program.otp)) prompts.push(schema.otp)
+//          if ((program.provider !== 'bitgo') && (!program.otp)) prompts.push(schema.otp)
             prompts.push(schema.accessToken)
           }
           prompt.get(prompts, (err, result) => {
@@ -273,7 +273,7 @@ switch (process.title) {
             provider.online.authenticate(config, (err, options) => {
               if (err) throw err
 
-              if ((program.provider !== 'bitgo') && (!program.otp)) options.message = details[0].transactionId
+              if (program.provider !== 'bitgo') options.message = details[0].transactionId
               provider.online.createTx(options, (err, unsignedTx) => {
                 if (err) throw err
 
@@ -412,7 +412,7 @@ switch (process.title) {
           prompts.push(schema.password)
           if (!program.otp) prompts.push(schema.otp)
         } else {
-          if ((program.provider !== 'bitgo') && (!program.otp)) prompts.push(schema.otp)
+//        if ((program.provider !== 'bitgo') && (!program.otp)) prompts.push(schema.otp)
           prompts.push(schema.accessToken)
         }
         prompt.get(prompts, (err, result) => {
