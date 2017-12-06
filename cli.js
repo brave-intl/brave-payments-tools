@@ -191,7 +191,7 @@ switch (process.title) {
         if (err) throw err
 
         config.passphrase = result.passphrase1
-        provider.offline.showKeys(config, (err, secretKey) => {
+        provider.offline.showKey(config, (err, secretKey) => {
           if (err) throw err
 
           console.log(secretKey)
