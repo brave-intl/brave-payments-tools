@@ -70,7 +70,7 @@ const pass1 = (cardId, startDate) => {
     start = new moment(startDate, 'YYYY-MM-DD') // eslint-disable-line new-cap
   } catch (ex) {}
 
-  if (!start) {
+  if ((startDate) && (!start)) {
     console.log('invalid starting date: ' + startDate)
     process.exit(1)
   }
@@ -83,10 +83,11 @@ const pass2 = (data, start) => {
   const fields = []
   const pairs = []
   const results = []
-  const stop = new moment(start).startOf('month').add(1, 'months') // eslint-disable-line new-cap
+  let stop
   let balance = new BigNumber(0)
   let usd = new BigNumber(0)
 
+  if (start) stop = new moment(start).startOf('month').add(1, 'months') // eslint-disable-line new-cap
   fields.push('Confirm Date', 'Create Date', 'TXID', 'Amount', 'Fee', 'Total', 'Balance', 'Balance in USD')
   currencies.push('USD')
 
@@ -100,7 +101,7 @@ const pass2 = (data, start) => {
     usd = usd.plus(datum[currency])
     datum['Balance in ' + currency] = usd.toString()
 
-    if ((then < start) || (stop <= then)) return
+    if ((start) && (stop) && ((then < start) || (stop <= then))) return
 
     if (pairs.indexOf(datum.pair) === -1) pairs.push(datum.pair)
 
@@ -120,6 +121,7 @@ const pass2 = (data, start) => {
 }
 
 switch (process.argv.length) {
+  case 4:
   case 5:
     uphold = new UpholdSDK.default({ // eslint-disable-line new-cap
       baseUrl: 'https://api.uphold.com',
