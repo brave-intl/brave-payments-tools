@@ -32,12 +32,13 @@ const transfer = (source, passphrase, destination) => {
           if ((target > numBlocks) && (estimate.numBlocks >= target)) fee = estimate.feeByBlockTarget[numBlocks = target]
         }
         console.log('satoshis=' + satoshis + ' fee=' + fee + ' numBlocks=' + numBlocks)
-      
-        wallet.sendCoins({ address          : destination
-                         , amount           : satoshis - fee
-                         , fee              : fee
-                         , walletPassphrase : passphrase
-                         }, (err, result) => {
+
+        wallet.sendCoins({
+          address: destination,
+          amount: satoshis - fee,
+          fee: fee,
+          walletPassphrase: passphrase
+        }, (err, result) => {
           if (err) throw err
 
           console.log(JSON.stringify(underscore.omit(result, [ 'tx' ]), null, 2))
@@ -53,6 +54,6 @@ switch (process.argv.length) {
     return transfer(process.argv[3], process.argv[4], process.argv[5])
 
   default:
-    console.log("usage: " + process.argv[0] + " " + process.argv[1] + " <accessToken> <source> <passphrase> <destination>")
+    console.log('usage: ' + process.argv[0] + ' ' + process.argv[1] + ' <accessToken> <source> <passphrase> <destination>')
     process.exit(1)
 }

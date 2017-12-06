@@ -18,11 +18,12 @@ const add = () => {
     if (err) throw err
 
     process.stderr.write('>')
-    underscore.extend(wallet, { balance: result.balance()
-                              , spendable: result.spendableBalance()
-                              , confirmed: result.confirmedBalance()
-                              , unconfirmed: result.unconfirmedReceives()
-                              })
+    underscore.extend(wallet, {
+      balance: result.balance(),
+      spendable: result.spendableBalance(),
+      confirmed: result.confirmedBalance(),
+      unconfirmed: result.unconfirmedReceives()
+    })
     data.push(wallet)
     if (wallets.length === 0) return console.log(json2csv({ data: data }))
 
@@ -54,6 +55,6 @@ switch (process.argv.length) {
     return listWallets(0)
 
   default:
-    console.log("usage: " + process.argv[0] + " " + process.argv[1] + " <user> <pass> <otp>, or <accessToken>")
+    console.log('usage: ' + process.argv[0] + ' ' + process.argv[1] + ' <user> <pass> <otp>, or <accessToken>')
     process.exit(1)
 }

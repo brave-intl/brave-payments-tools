@@ -9,8 +9,10 @@ let bitgo
 
 const generate = (address, startDate) => {
   let start
-  
-  try { start = new moment(startDate, 'YYYY-MM-DD') } catch (ex) {}
+
+  try {
+    start = new moment(startDate, 'YYYY-MM-DD') // eslint-disable-line new-cap
+  } catch (ex) {}
 
   if (!start) {
     console.log('invalid starting date: ' + startDate)
@@ -36,6 +38,6 @@ switch (process.argv.length) {
     return generate(process.argv[3], process.argv[4])
 
   default:
-    console.log("usage: " + process.argv[0] + " " + process.argv[1] + " <accessToken> <address> <startDate>")
+    console.log('usage: ' + process.argv[0] + ' ' + process.argv[1] + ' <accessToken> <address> <startDate>')
     process.exit(1)
 }

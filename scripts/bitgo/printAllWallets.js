@@ -43,6 +43,6 @@ switch (process.argv.length) {
     return printAllWallets(0)
 
   default:
-    console.log("usage: " + process.argv[0] + " " + process.argv[1] + " <user> <pass> <otp>, or <accessToken>")
+    console.log('usage: ' + process.argv[0] + ' ' + process.argv[1] + ' <user> <pass> <otp>, or <accessToken>')
     process.exit(1)
 }
