@@ -183,6 +183,31 @@ switch (process.title) {
     })
     break
 
+  case 'offline-show-key':
+    if (!program.keychains) throw new Error('must specify --keychains ...')
+
+    fs.readFile(program.keychains, { encoding: 'utf8', flag: 'r' }, (err, data) => {
+      let config
+
+      if (err) throw err
+
+      config = JSON.parse(data)
+      config.keychain = config.userKey
+
+      prompt.start()
+      prompt.get([ schema.passphrase1b ], (err, result) => {
+        if (err) throw err
+
+        config.passphrase = result.passphrase1
+        provider.offline.showKey(config, (err, secretKey) => {
+          if (err) throw err
+
+          console.log(secretKey)
+        })
+      })
+    })
+    break
+
   case 'online-create-wallet':
     if (!program.keychains) throw new Error('must specify --keychains ...')
 
