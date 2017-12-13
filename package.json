@@ -28,6 +28,7 @@
   "homepage": "https://github.com/brave/payment-tools",
   "dependencies": {
     "@uphold/uphold-sdk-javascript": "^2.0.3",
+    "bat-client": "^2.0.4",
     "bignumber.js": "^4.0.4",
     "bitgo": "^3.4.4",
     "brave-crypto": "0.0.1",
