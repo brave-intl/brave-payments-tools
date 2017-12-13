@@ -36,8 +36,6 @@ program
           'the unsignedTx file to write(online-create-transaction) or read(offline-sign-transaction)')
   .option('-s, --signedTx <fileName>',
           'the signedTx file to write(offline-sign-transaction) or read(online-submit-transaction)')
-  .option('-z, --secrets <fileName>',
-          'the secrets file to be split into recovery-files')
   .option('-e, --user <emailAddress>',
           'the BitGo account email-address')
   .option('-o, --otp <oneTimePassword>',
@@ -96,12 +94,6 @@ const update = (params, result) => {
   return params
 }
 
-const numbion = (s, d) => {
-  const i = parseInt(s, 10)
-
-  return (isNaN(i) ? d : i)
-}
-
 const outFile = (infile, infix, outfix) => {
   let file = path.basename(infile, '.json')
 
@@ -153,8 +145,8 @@ switch (process.title) {
         passphrase2: result.passphrase2
       })
 
-      min = numbion(program.min, 2)
-      max = numbion(program.max, 3)
+      min = Number.isInteger(program.min) ? program.min : 2
+      max = Number.isInteger(program.max) ? program.max : 3
       if (max < 2) max = 2
       if (min > max) min = max
       recovery.userKey = { hex: secrets.str2hex(result.passphrase1) }
@@ -498,29 +490,6 @@ switch (process.title) {
     })
     break
 
-  case 'offline-split-passphrases':
-    if (!program.secrets) throw new Error('must specify --secrets ...')
-
-    fs.readFile(program.secrets, { encoding: 'binary', flag: 'r' }, (err, data) => {
-      let i, label, min, max, scratchpad, shares
-
-      if (err) throw err
-
-      label = program.label || uuid.v4().toLowerCase()
-      min = numbion(program.min, 2)
-      max = numbion(program.max, 3)
-      if (max < 2) max = 2
-      if (min > max) min = max
-      shares = secrets.share(secrets.str2hex(data), max, min)
-
-      for (i = 0; i < max; i++) {
-        scratchpad = { secrets: {} }
-        scratchpad.secrets['share_' + i] = shares[i]
-        writeFile('recovery_' + i + '_' + min + '_' + max + '-' + label + '.json', scratchpad)
-      }
-    })
-    break
-
   case 'offline-recover-passphrases':
     const recovery = {}
 
@@ -541,15 +510,9 @@ switch (process.title) {
     underscore.keys(recovery).forEach((type) => {
       underscore.keys(recovery[type]).forEach((xpub) => {
         const combo = secrets.combine(recovery[type][xpub])
-        const data = combo && secrets.hex2str(combo)
 
         if (!combo) throw new Error('insufficient shards for ' + type + '.' + xpub)
-
-        if (xpub !== 'undefined') return console.log(type + '.' + xpub + ' ' + data)
-
-        if (process.stdout.isTTY) return process.stdout.write(data)
-
-        process.stdout.write(data, 'binary')
+        console.log(type + '.' + xpub + ' ' + secrets.hex2str(combo))
       })
     })
     break
@@ -561,7 +524,6 @@ switch (process.title) {
     console.log('  online-create-transaction --wallet input-file --payments input-file [--unsignedTx output-file] authopts...')
     console.log('  offline-sign-transaction --unsignedTx input-file [--signedTx output-file] [--keychains input-file]')
     console.log('  online-submit-transaction --signedTx input-file [--submitTx output-file] authopts...')
-    console.log('  offline-recover-passphrases files...')
     console.log('')
     console.log('authopts: --user email-address [--otp one-time-password]')
     console.log('  for bitgo: if --user is used on wallet creation, then password and OTP are required for subsequent')
