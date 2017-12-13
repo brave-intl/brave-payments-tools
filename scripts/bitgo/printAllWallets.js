@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 
-/* jshint asi: true, node: true, laxbreak: true, laxcomma: true, undef: true, unused: true */
+/* jshint asi: true, node: true, laxbreak: true, laxcomma: true, undef: true, unused: true, esversion: 6 */
 
-var BitGoJS = require('../node_modules/bitgo/src/index.js')
-var json2csv = require('../node_modules/json2csv/lib/json2csv.js')
+const BitGoJS = require('bitgo')
+const json2csv = require('json2csv')
 
-var bitgo
+let bitgo
 
-var data = []
+let data = []
 
-var printAllWallets = function (skip) {
-  bitgo.wallets().list({ skip: skip, limit: 250 }, function (err, result) {
-    var id
+const printAllWallets = (skip) => {
+  bitgo.wallets().list({ skip: skip, limit: 250 }, (err, result) => {
+    let id
 
     if (err) throw err
 
     if (result.wallets.length === 0) {
-      var r = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      const r = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-      data = data.sort(function (a, b) {
+      data = data.sort((a, b) => {
         if (a.label.match(r)) {
           if (!b.label.match(r)) return 1
         } else if (b.label.match(r)) return (-1)
@@ -43,6 +43,6 @@ switch (process.argv.length) {
     return printAllWallets(0)
 
   default:
-    console.log("usage: " + process.argv[0] + " " + process.argv[1] + " <user> <pass> <otp>, or <accessToken>")
+    console.log('usage: ' + process.argv[0] + ' ' + process.argv[1] + ' <user> <pass> <otp>, or <accessToken>')
     process.exit(1)
 }

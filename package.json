@@ -1,6 +1,6 @@
 {
   "name": "brave-payments-tools",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "Tools for Brave Payments.",
   "main": "index.js",
   "scripts": {
@@ -29,6 +29,7 @@
   "homepage": "https://github.com/brave/payment-tools",
   "dependencies": {
     "@uphold/uphold-sdk-javascript": "^2.0.3",
+    "bat-client": "^2.0.4",
     "bignumber.js": "^4.0.4",
     "bitgo": "^3.4.4",
     "brave-crypto": "0.0.1",
