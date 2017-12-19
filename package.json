@@ -19,6 +19,7 @@
     "offline-recover-passphrases": "./bin/offline-recover-passphrases",
     "offline-sign-transaction": "./bin/offline-sign-transaction",
     "offline-show-key": "./bin/offline-show-key",
+    "offline-split-passphrases": "./bin/offline-split-passphrases",
     "online-create-transaction": "./bin/online-create-transaction",
     "online-create-wallet": "./bin/online-create-wallet",
     "online-submit-transaction": "./bin/online-submit-transaction"
