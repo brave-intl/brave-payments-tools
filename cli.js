@@ -561,6 +561,7 @@ switch (process.title) {
     console.log('  online-create-transaction --wallet input-file --payments input-file [--unsignedTx output-file] authopts...')
     console.log('  offline-sign-transaction --unsignedTx input-file [--signedTx output-file] [--keychains input-file]')
     console.log('  online-submit-transaction --signedTx input-file [--submitTx output-file] authopts...')
+    console.log('  offline-split-passphrases --secrets input-file')
     console.log('  offline-recover-passphrases files...')
     console.log('')
     console.log('authopts: --user email-address [--otp one-time-password]')
