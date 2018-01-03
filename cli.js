@@ -282,7 +282,11 @@ switch (process.title) {
 
         details = JSON.parse(data)
         config.recipients = {}
-        details.forEach((entry) => { config.recipients[entry.address] = entry.probi || entry.satoshis })
+        details.forEach((entry) => {
+          if (!entry.address) throw new Error('undefined address for ' + JSON.stringify(entry))
+
+          config.recipients[entry.address] = entry.probi || entry.satoshis
+        })
 
         file = program.unsignedTx || outFile(program.payments, 'payments-', 'unsigned-')
         fs.access(file, fs.F_OK, (err) => {
