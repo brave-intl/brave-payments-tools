@@ -1,6 +1,6 @@
 {
   "name": "brave-payments-tools",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "Tools for Brave Payments.",
   "main": "index.js",
   "scripts": {
