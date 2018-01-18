@@ -78,5 +78,6 @@ switch (process.argv.length) {
 
   default:
     console.log('usage: ' + process.argv[0] + ' ' + process.argv[1] + ' <accessToken> <source> <seed> <destination>')
+    console.log('usage: ' + process.argv[0] + ' ' + process.argv[1] + ' <seed>')
     process.exit(1)
 }
