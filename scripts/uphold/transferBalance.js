@@ -54,7 +54,14 @@ const transact = (source, keypair, body, commitP, callback) => {
       })
 }
 
+const recoverKeyPair = (seed) => {
+  return LedgerClient(null, { roundtrip: () => {} }, null).recoverKeypair(seed)
+}
+
 switch (process.argv.length) {
+  case 3:
+    return console.log(braveCrypto.uint8ToHex(recoverKeyPair(process.argv[2]).publicKey))
+
   case 6:
     uphold = new UpholdSDK.default({ // eslint-disable-line new-cap
       baseUrl: 'https://api.uphold.com',
@@ -71,5 +78,6 @@ switch (process.argv.length) {
 
   default:
     console.log('usage: ' + process.argv[0] + ' ' + process.argv[1] + ' <accessToken> <source> <seed> <destination>')
+    console.log('usage: ' + process.argv[0] + ' ' + process.argv[1] + ' <seed>')
     process.exit(1)
 }
