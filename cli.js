@@ -90,7 +90,9 @@ const update = (params, result) => {
     if (program.provider === 'uphold') params.otp = program.otp || result.otp
   }
   if ((!(params.password && params.otp)) && (!params.accessToken)) {
-    throw new Error('missing credentials')
+    if ((program.provider !== 'uphold') || (process.title !== 'online-create-transaction')) {
+      throw new Error('missing credentials')
+    }
   }
 
   return params
@@ -105,7 +107,13 @@ const numbion = (s, d) => {
 const outFile = (infile, infix, outfix) => {
   let file = path.basename(infile, '.json')
 
-  if (file.indexOf(infix) === 0) file = file.substring(infix.length)
+  if (!Array.isArray(infix)) infix = [ infix ]
+  for (let infn of infix) {
+    if (file.indexOf(infn) !== 0) continue
+
+    file = file.substring(infn.length)
+    break
+  }
   return (outfix + file + '.json')
 }
 
@@ -127,22 +135,26 @@ env = process.env[env + '_ENV'] || process.env[env + '_ENVIRONMENT'] || 'prod'
 if (env === 'sandbox') env = 'test'
 if (env === 'production') env = 'prod'
 
+if ((program.provider === 'uphold') && (process.title === 'offline-create-transaction')) {
+  process.title = 'online-create-transaction'
+}
+
 switch (process.title) {
   case 'offline-create-keychains':
     const prompts = []
 
     prompt.start()
     prompts.push(schema.passphrase1a)
-    if (program.provider === 'bitgo') prompts.push(schema.passphrase2a)
+    if (program.provider !== 'uphold') prompts.push(schema.passphrase2a)
     prompt.get(prompts, (err, result) => {
       const recovery = {}
       let config, file, label, max, min
 
       if (err) throw err
 
-      if ((program.provider !== 'bitgo') ? (!result.passphrase1)
+      if ((program.provider === 'uphold') ? (!result.passphrase1)
           : ((!(result.passphrase1 && result.passphrase2)) || (result.passphrase1 === result.passphrase2))) {
-        throw new Error('invalid passphrase' + (program.provider !== 'bitgo' ? '' : 's'))
+        throw new Error('invalid passphrase' + (program.provider === 'uphold' ? '' : 's'))
       }
 
       label = program.label || uuid.v4().toLowerCase()
@@ -231,13 +243,12 @@ switch (process.title) {
         if (!err) throw new Error('file exists: ' + file)
 
         prompt.start()
-        if (program.provider === 'bitgo') {
+        if (program.provider !== 'uphold') {
           if (program.user) schema.password.description = program.user + ' password'
           else prompts.push(schema.username)
           prompts.push(schema.password)
           prompts.push(schema.enterpriseId)
         }
-//      if (!program.otp) prompts.push(schema.otp)
         prompts.push(schema.accessToken)
         prompt.get(prompts, (err, result) => {
           if (err) throw err
@@ -281,14 +292,15 @@ switch (process.title) {
         if (err) throw err
 
         details = JSON.parse(data)
-        config.recipients = {}
+        config.recipients = program.provider !== 'uphold' ? {} : []
         details.forEach((entry) => {
           if (!entry.address) throw new Error('undefined address for ' + JSON.stringify(entry))
 
-          config.recipients[entry.address] = entry.probi || entry.satoshis
+          if (Array.isArray(config.recipients)) config.recipients.push({ address: entry.address, probi: entry.probi })
+          else config.recipients[entry.address] = entry.probi || entry.satoshis
         })
 
-        file = program.unsignedTx || outFile(program.payments, 'payments-', 'unsigned-')
+        file = program.unsignedTx || outFile(program.payments, [ 'payments-', 'contributions-', 'referrals-' ], 'unsigned-')
         fs.access(file, fs.F_OK, (err) => {
           const prompts = []
 
@@ -299,10 +311,7 @@ switch (process.title) {
             schema.password.description = config.authenticate.username + ' password'
             prompts.push(schema.password)
             if (!program.otp) prompts.push(schema.otp)
-          } else {
-//          if ((program.provider !== 'bitgo') && (!program.otp)) prompts.push(schema.otp)
-            prompts.push(schema.accessToken)
-          }
+          } else if (program.provider !== 'uphold') prompts.push(schema.accessToken)
           prompt.get(prompts, (err, result) => {
             if (err) throw err
 
@@ -310,7 +319,7 @@ switch (process.title) {
             provider.online.authenticate(config, (err, options) => {
               if (err) throw err
 
-              if (program.provider !== 'bitgo') options.message = details[0].transactionId
+              if (program.provider === 'uphold') options.message = details[0].transactionId
               provider.online.createTx(options, (err, unsignedTx) => {
                 if (err) throw err
 
@@ -333,7 +342,7 @@ switch (process.title) {
       if (err) throw err
 
       config = JSON.parse(data)
-      if (program.provider === 'bitgo') {
+      if (program.provider !== 'uphold') {
         unsignedTx = config
         if (!(unsignedTx.transactionHex && unsignedTx.unspents && unsignedTx.walletId && unsignedTx.walletKeychains)) {
           throw new Error('unsignedTx file missing transaction information')
@@ -371,7 +380,7 @@ switch (process.title) {
           keychain = JSON.parse(data)
           if (!(keychain.userKey && keychain.userKey.encryptedXprv)) throw new Error(file + ' missing userKey information')
 
-          if (program.provider === 'bitgo') {
+          if (program.provider !== 'uphold') {
             if (!underscore.find(unsignedTx.walletKeychains,
                                  (entry) => { return (entry.xpub === keychain.userKey.xpub) })) return
           } else if (unsignedTx.label !== keychain.userKey.payload.signedTx.body.label) return
@@ -390,7 +399,7 @@ switch (process.title) {
               provider.offline.createSignedTx(config, (err, signedTx) => {
                 if (err) throw err
 
-                if (program.provider === 'bitgo') {
+                if (program.provider !== 'uphold') {
                   underscore.extend(signedTx, underscore.pick(unsignedTx, [ 'walletId', 'authenticate' ]))
                 }
                 writeFile(file, signedTx)
@@ -413,7 +422,7 @@ switch (process.title) {
       config = JSON.parse(data)
       if (!config.authenticate) throw new Error('wallet file missing authentication information')
 
-      if (program.provider === 'bitgo') {
+      if (program.provider !== 'uphold') {
         if (!config.walletId) throw new Error('signedTx file missing wallet identity information')
       } else {
         if (!Array.isArray(config.signedTxs)) throw new Error('signedTx file missing transaction information')
@@ -448,10 +457,7 @@ switch (process.title) {
           schema.password.description = config.authenticate.username + ' password'
           prompts.push(schema.password)
           if (!program.otp) prompts.push(schema.otp)
-        } else {
-//        if ((program.provider !== 'bitgo') && (!program.otp)) prompts.push(schema.otp)
-          prompts.push(schema.accessToken)
-        }
+        } else prompts.push(schema.accessToken)
         prompt.get(prompts, (err, result) => {
           if (err) throw err
 
@@ -472,7 +478,12 @@ switch (process.title) {
               }
 
               const finalize = (err) => {
-                if ((submit) && (submit.length > 0)) return writeFile(file, submit, () => { console.log('done.') })
+                if ((submit) && (submit.length > 0)) {
+                  return writeFile(file, submit, () => {
+                    if (err) console.error(err.toString())
+                    console.log('done.')
+                  })
+                }
 
                 if (err) throw err
               }
@@ -480,7 +491,7 @@ switch (process.title) {
               provider.online.submitTx(underscore.extend(tx, options), (err, result) => {
                 if (err) return finalize(err)
 
-                if (program.provider === 'bitgo') underscore.extend(result, underscore.pick(config, [ 'walletId', 'message' ]))
+                if (program.provider !== 'uphold') underscore.extend(result, underscore.pick(config, [ 'walletId', 'message' ]))
                 writeFile(target, result, () => {
                   if (typeof offset === 'undefined') return
 

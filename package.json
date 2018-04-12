@@ -17,6 +17,7 @@
   "bin": {
     "offline-create-keychains": "./bin/offline-create-keychains",
     "offline-recover-passphrases": "./bin/offline-recover-passphrases",
+    "offline-create-transaction": "./bin/offline-create-transaction",
     "offline-sign-transaction": "./bin/offline-sign-transaction",
     "offline-show-key": "./bin/offline-show-key",
     "offline-split-passphrases": "./bin/offline-split-passphrases",

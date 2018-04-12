@@ -129,21 +129,19 @@ e.g.,
 
     which contains a list of publisher settlements
 
-2. An unsigned transaction is created,
-and then transferred to the cold machine.
+2. The payments file is transferred to the cold machine.
 
 3. On the cold machine,
-the transaction is signed (requiring the operator to enter the passphrase for the keypair's private key).
+an unsigned transaction is created,
+and then the transaction is signed (requiring the operator to enter the passphrase for the keypair's private key).
 
 4. The signed transaction is then transferred to the networked machine and submitted to the BitGo server.
 
-## On the Networked Machine
+## On the Cold Machine
 
-    % bin/online-create-transaction \
+    % bin/offline-create-transaction \
         --wallet wallet-779826ce-a74f-4d61-907a-0d238db9808f.json \
         --payments payments-batch1.json 
-    prompt: OTP: ...
-    prompt: Application access-token: ...
 
     wrote unsigned-batch1.json
 
@@ -169,8 +167,6 @@ e.g.,
       ],
       "authenticate": {}
     }
-
-## On the Cold Machine
 
     % bin/offline-sign-transaction \
         --unsignedTx unsigned-batch1.json
