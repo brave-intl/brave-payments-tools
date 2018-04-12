@@ -472,7 +472,12 @@ switch (process.title) {
               }
 
               const finalize = (err) => {
-                if ((submit) && (submit.length > 0)) return writeFile(file, submit, () => { console.log('done.') })
+                if ((submit) && (submit.length > 0)) {
+                  return writeFile(file, submit, () => {
+                    if (err) console.error(err.toString())
+                    console.log('done.')
+                  })
+                }
 
                 if (err) throw err
               }
