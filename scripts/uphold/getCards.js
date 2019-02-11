@@ -24,7 +24,7 @@ const generate = (startPage) => {
 
       setTimeout(() => { fetch(pageno + 1) }, 5 * 1000)
     }).catch((err) => {
-      console.log(json2csv({ data: data }))
+      console.log(JSON.stringify(err, null, 2))
       throw err
     })
   }
